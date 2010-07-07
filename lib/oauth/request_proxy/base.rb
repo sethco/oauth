@@ -9,14 +9,19 @@ module OAuth::RequestProxy
       OAuth::RequestProxy.available_proxies[klass] = self
     end
 
-    attr_accessor :request, :options
+    attr_accessor :request, :options, :unsigned_parameters
 
     def initialize(request, options = {})
       @request = request
+      @unsigned_parameters = (options[:unsigned_parameters] || []).map {|param| param.to_s}
       @options = options
     end
 
     ## OAuth parameters
+
+    def oauth_callback
+      parameters['oauth_callback']
+    end
 
     def oauth_consumer_key
       parameters['oauth_consumer_key']
@@ -28,7 +33,7 @@ module OAuth::RequestProxy
 
     def oauth_signature
       # TODO can this be nil?
-      parameters['oauth_signature'] || ""
+      [parameters['oauth_signature']].flatten.first || ""
     end
 
     def oauth_signature_method
@@ -46,6 +51,10 @@ module OAuth::RequestProxy
 
     def oauth_token
       parameters['oauth_token']
+    end
+
+    def oauth_verifier
+      parameters['oauth_verifier']
     end
 
     def oauth_version
@@ -67,7 +76,7 @@ module OAuth::RequestProxy
     end
 
     def parameters_for_signature
-      parameters.reject { |k,v| k == "oauth_signature" }
+      parameters.reject { |k,v| k == "oauth_signature" || unsigned_parameters.include?(k)}
     end
 
     def oauth_parameters
