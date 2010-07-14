@@ -57,7 +57,7 @@ module OAuth::Client
     end
 
     def hash_body
-      @options[:body_hash] = OAuth::Signature.body_hash(@request, :parameters => oauth_parameters)
+      @options[:body_hash] = OAuth::Signature.body_hash(@request, :parameters => oauth_parameters) unless options[:exclude_body_hash]
     end
 
     def amend_user_agent_header(headers)
